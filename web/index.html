@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>历史上的今天 · 数据展示</title>
+<style>
+:root{--bg:#0d1117;--panel:#161b22;--panel2:#1c2330;--line:#2a3240;--fg:#e6edf3;--dim:#8b949e;--dim2:#6e7681;
+--accent:#58a6ff;--green:#3fb950;--red:#f85149;--amber:#d29922;--purple:#bc8cff}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.65 -apple-system,"Segoe UI","Microsoft YaHei",system-ui,sans-serif}
+a{color:var(--accent)}
+.wrap{max-width:1180px;margin:0 auto;padding:0 20px 70px}
+
+header{background:linear-gradient(160deg,#161b22,#0d1117 70%);border-bottom:1px solid var(--line);padding:26px 0 20px}
+h1{margin:0 0 6px;font-size:24px}
+.sub{color:var(--dim);font-size:13.5px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:10px;margin:18px 0 0}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:11px 13px}
+.stat b{display:block;font-size:20px}.stat span{color:var(--dim);font-size:12px}
+.stat.g b{color:var(--green)}.stat.a b{color:var(--amber)}.stat.p b{color:var(--purple)}
+
+.bar{position:sticky;top:0;z-index:40;background:rgba(13,17,23,.95);backdrop-filter:blur(8px);
+border-bottom:1px solid var(--line);padding:10px 0}
+.bar .inner{max-width:1180px;margin:0 auto;padding:0 20px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+select,input[type=search]{background:var(--panel);border:1px solid var(--line);color:var(--fg);
+border-radius:8px;padding:7px 11px;font:inherit;font-size:13.5px}
+select:focus,input:focus{outline:none;border-color:var(--accent)}
+.toggle{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.toggle button{background:var(--panel);border:0;color:var(--dim);padding:7px 13px;font:inherit;font-size:13px;cursor:pointer}
+.toggle button.on{background:#1f6feb;color:#fff}
+.dnav{display:flex;align-items:center;gap:6px}
+.dnav button{background:var(--panel);border:1px solid var(--line);color:var(--fg);border-radius:8px;
+padding:7px 11px;font:inherit;font-size:13px;cursor:pointer;line-height:1.2}
+.dnav button:hover{border-color:var(--accent);color:var(--accent)}
+.dnav button.on{background:#1f6feb;border-color:#1f6feb;color:#fff}
+.dnav button:disabled{opacity:.4;cursor:default}
+.dnav #date{min-width:200px;font-variant-numeric:tabular-nums}
+#dayNav{color:var(--dim2);font-size:11.5px;font-weight:400;margin-left:6px}
+
+h2{font-size:19px;margin:34px 0 10px;padding-bottom:9px;border-bottom:1px solid var(--line);
+display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+h2 .n{font-size:12px;color:var(--dim2);font-weight:400;background:var(--panel2);padding:2px 9px;border-radius:20px;border:1px solid var(--line)}
+.fes{display:flex;gap:7px;flex-wrap:wrap;margin:12px 0 0}
+.fescard{background:#1d1806;border:1px solid #7a5c11;border-radius:9px;padding:8px 12px;max-width:520px}
+.fescard .fesname{color:var(--amber);font-size:13.5px;font-weight:600}
+.fescard .since{color:var(--dim2);font-weight:400;font-size:12px;margin-left:5px}
+.fescard .fesori{color:var(--fg);font-size:13px;margin-top:4px;line-height:1.5}
+.fescard .fesori.dim{color:var(--dim2)}
+.fescard .fesmeta{color:var(--dim2);font-size:11.5px;margin-top:4px}
+
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin:12px 0}
+.chip{background:var(--panel2);border:1px solid var(--line);color:var(--dim);font-size:12.5px;
+padding:4px 11px;border-radius:20px;cursor:pointer;user-select:none}
+.chip:hover{color:var(--fg)}
+.chip.on{background:#1f6feb;border-color:#1f6feb;color:#fff}
+.chip .c{opacity:.7;margin-left:5px;font-size:11px}
+
+.item{background:var(--panel);border:1px solid var(--line);border-radius:10px;margin-bottom:10px;padding:13px 15px}
+.item.flagged{border-color:#8b2c26;background:#1d1213}
+.item .top{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:7px}
+.item .yr{color:var(--amber);font-weight:700;font-size:13.5px;font-variant-numeric:tabular-nums}
+.pill{font-size:11px;padding:1.5px 8px;border-radius:5px;background:#0d1117;border:1px solid var(--line);color:var(--dim)}
+.pill.cat{color:var(--accent);border-color:#1f4d80}
+.pill.tag{color:var(--purple);border-color:#5a3f96}
+.pill.sens0{color:var(--green);border-color:#1f6f36}
+.pill.sens1{color:var(--amber);border-color:#7a5c11}
+.pill.sens2{color:#ff9e64;border-color:#8a4b1a}
+.pill.sens3{color:var(--red);border-color:#8b2c26}
+.pill.keep{color:var(--dim2)}
+.pill.trim{color:var(--green);border-color:#1f6f36}
+.pill.flag{color:var(--red);border-color:#8b2c26}
+.pill.score{color:var(--amber);border-color:#7a5c11;font-weight:700}
+.chips .lbl{color:var(--dim2);font-size:12px;align-self:center;margin-right:3px}
+.pill.type{color:var(--dim)}
+
+.src{color:var(--fg);font-size:14px}
+.srcOnly .out{display:none}
+.outOnly .src{display:none}
+.compare .src{color:var(--dim)}
+.compare .src::before{content:"原 ";color:var(--dim2);font-size:12px}
+.compare .out{margin-top:6px}
+.compare .out::before{content:"AI ";color:var(--green);font-size:12px}
+.out{color:var(--green);font-size:14.5px}
+.noai{color:var(--dim2);font-size:12.5px;margin-top:6px}
+.len{font-size:11.5px;color:var(--dim2);margin-left:6px}
+.empty{color:var(--dim);text-align:center;padding:40px 0}
+#boot{max-width:1180px;margin:0 auto;padding:26px 20px;color:var(--dim);font-size:13.5px}
+#boot code{background:var(--panel2);border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-size:12.5px}
+#boot .err{color:var(--red)}
+footer{color:var(--dim2);font-size:12.5px;text-align:center;margin-top:50px;padding-top:20px;border-top:1px solid var(--line)}
+</style></head>
+<body>
+<div id="boot">正在加载 <code>data.json</code>…</div>
+<script>
+window.addEventListener('error', function (e) {
+  var b = document.getElementById('boot');
+  if (b && b.style.display !== 'none') {
+    b.innerHTML = '<span class="err">加载 data.json 失败：' + (e.message || e) + '</span><br><br>'
+      + '如果是双击打开的（file:// 协议），浏览器会拦下 fetch —— 请改用：<br>'
+      + '　① <code>npm run review</code> 然后访问 <code>http://127.0.0.1:8770/index.html</code>，或<br>'
+      + '　② 生成单文件版本：<code>node src/build_site.js --standalone</code> → <code>web/standalone.html</code>';
+  }
+});
+</script>
+<header><div class="wrap" style="padding-bottom:0">
+  <h1>历史上的今天 · 数据展示</h1>
+  <div class="sub">简体中文维基数据 + 百度节日 · AI 审核精简对照 · 生成于 <span id="gen"></span><br>
+  数据截至 <b id="genYear"></b> · 每条带分类 / 标签 / 敏感度 / 中国关注度评分 · 可按敏感度筛选、按分数排序</div>
+  <div class="stats" id="stats"></div>
+</div></header>
+
+<div class="bar"><div class="inner">
+  <div class="dnav">
+    <button id="prevDay" title="上一天（快捷键 ←）">◀</button>
+    <select id="date"></select>
+    <button id="nextDay" title="下一天（快捷键 →）">▶</button>
+    <button id="todayBtn" title="跳到今天（快捷键 t）">今天</button>
+  </div>
+  <div class="toggle" id="view">
+    <button data-v="compare" class="on">对比</button>
+    <button data-v="srcOnly">只看原样</button>
+    <button data-v="outOnly">只看 AI</button>
+  </div>
+  <input type="search" id="q" placeholder="🔍 搜索条目…" style="flex:1;min-width:150px">
+</div></div>
+
+<div class="wrap">
+  <h2 id="dayTitle">—</h2>
+  <div class="fes" id="festivals"></div>
+
+  <div class="chips" id="typeChips"></div>
+  <div class="chips" id="catChips"></div>
+  <div class="chips" id="extraChips"></div>
+
+  <div id="list"></div>
+</div>
+<footer>数据：维基百科（CC BY-SA）+ 百度百科官方源 · AI：DeepSeek-V3.2 via SiliconFlow<br>
+生成脚本 <span style="font-family:monospace">src/build_site.js</span></footer>
+
+<script>
+const DATA = await fetch('./data.json').then(r => {
+  if (!r.ok) throw new Error('HTTP ' + r.status);
+  return r.json();
+});
+(function () { const b = document.getElementById('boot'); if (b) b.style.display = 'none'; })();
+const $ = (s,r=document)=>r.querySelector(s);
+const esc = s => String(s==null?'':s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+const TYPE_CN = {e:'事件',b:'出生',d:'逝世',h:'节日'};
+const TCODE = {events:'e',births:'b',deaths:'d',holidays:'h'};
+const tcode = (t)=>TCODE[t]||t;
+
+/* ---------- 日期工具（键统一为补零 MM-DD） ---------- */
+const DATES = Object.keys(DATA.days).sort((a,b)=>{
+  const [am,ad]=a.split('-').map(Number),[bm,bd]=b.split('-').map(Number);
+  return am-bm||ad-bd;
+});
+const padKey = (k)=>{const m=String(k||'').match(/^(\d{1,2})-(\d{1,2})$/);return m?String(+m[1]).padStart(2,'0')+'-'+String(+m[2]).padStart(2,'0'):'';};
+const DAYS_IN_MONTH = [31,29,31,30,31,30,31,31,30,31,30,31];
+function stepDate(key, delta){
+  let [m,d] = key.split('-').map(Number);
+  d += delta;
+  while(d < 1){ m--; if(m<1)m=12; d += DAYS_IN_MONTH[m-1]; }
+  while(d > DAYS_IN_MONTH[m-1]){ d -= DAYS_IN_MONTH[m-1]; m++; if(m>12)m=1; }
+  return String(m).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+}
+const todayKey = ()=>{const t=new Date();return String(t.getMonth()+1).padStart(2,'0')+'-'+String(t.getDate()).padStart(2,'0');};
+
+let curDate = (function(){
+  const saved = padKey(new URLSearchParams(location.search).get('d'));
+  if(saved && DATA.days[saved]) return saved;
+  const t = todayKey();
+  if(DATA.days[t]) return t;
+  return DATES[0];
+})();
+let curType = '';
+let curCat = null;
+let curTag = null;
+let curSens = null;
+let curAct = null;
+let curView = 'compare';
+let kw = '';
+
+/* ---------- 顶部统计 ---------- */
+(function(){
+  const s = DATA.stats;
+  const cov = (100*s.aiCount/s.totalEntries).toFixed(1);
+  $('#stats').innerHTML = [
+    ['', s.totalEntries.toLocaleString(), '总条目'],
+    ['g', s.aiCount.toLocaleString(), 'AI 已处理'],
+    ['', cov+'%', 'AI 覆盖率'],
+    ['p', s.days, '覆盖天数'],
+    ['a', s.errors, '处理失败'],
+  ].map(([k,v,l])=>`<div class="stat ${k}"><b>${v}</b><span>${l}</span></div>`).join('');
+  $('#gen').textContent = DATA.generatedAt;
+  // 数据的「新鲜度」：让使用者一眼知道这份数据有多新
+  const gy = document.getElementById('genYear');
+  if (gy) gy.textContent = (DATA.generatedAt || '').slice(0, 7);
+})();
+
+/* ---------- 日期下拉 ---------- */
+(function(){
+  // 键已经统一成零填充 MM-DD（见构建时的 padKey），这里直接用
+  const keys = Object.keys(DATA.days).sort((a,b)=>{
+    const [am,ad]=a.split('-').map(Number),[bm,bd]=b.split('-').map(Number);
+    return am-bm||ad-bd;
+  });
+  const sel = $('#date');
+  sel.innerHTML = keys.map(k=>{
+    const d = DATA.days[k];
+    const mark = d.f.length ? ' 🎉' : '';
+    return `<option value="${k}"${k===curDate?' selected':''}>${d.m} 月 ${d.d} 日 · ${d.e.length} 条${mark}</option>`;
+  }).join('');
+  sel.onchange = () => goDate(sel.value);
+  $('#prevDay').onclick = () => stepDay(-1);
+  $('#nextDay').onclick = () => stepDay(1);
+  $('#todayBtn').onclick = () => goDate(todayKey());
+})();
+
+/* 跳日期：写进 URL 的 ?d=，刷新后还停在同一天；停在今天就保持干净地址 */
+function goDate(key){
+  if(!key || !DATA.days[key]) return;
+  curDate = key;
+  curType = ''; curCat = curTag = curAct = curSens = null;
+  const sel = $('#date');
+  if(sel && sel.value !== key) sel.value = key;
+  syncNav();
+  buildChips(); render();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function stepDay(delta){
+  const i = DATES.indexOf(curDate);
+  if(i < 0) return;
+  const t = i + delta;
+  if(t < 0 || t >= DATES.length) return;
+  goDate(DATES[t]);
+}
+function syncNav(){
+  const i = DATES.indexOf(curDate), t = todayKey();
+  const prev = $('#prevDay'), next = $('#nextDay');
+  if(prev) prev.disabled = i <= 0;
+  if(next) next.disabled = i < 0 || i >= DATES.length - 1;
+  const tb = $('#todayBtn');
+  if(tb) tb.classList.toggle('on', curDate === t);
+  window.history.replaceState(null, '', curDate === t ? location.pathname : '?d=' + curDate);
+}
+document.addEventListener('keydown', (ev)=>{
+  if(['INPUT','TEXTAREA','SELECT'].includes(ev.target.tagName)) return;
+  if(ev.key === 'ArrowLeft'){ ev.preventDefault(); stepDay(-1); }
+  else if(ev.key === 'ArrowRight'){ ev.preventDefault(); stepDay(1); }
+  else if(ev.key === 't'){ ev.preventDefault(); goDate(todayKey()); }
+});
+syncNav();
+
+/* ---------- 分类 / 类型 / 标签 chips（日期变化时需重建） ---------- */
+function buildChips(){
+  const day = DATA.days[curDate];
+  const counts = {};
+  day.e.forEach(e=>{ if(e[3]) counts[e[3][0]] = (counts[e[3][0]]||0)+1; });
+  const cats = DATA.categories.filter(c=>counts[c]);
+  $('#catChips').innerHTML = `<span class="lbl">分类</span><span class="chip ${curCat===null?'on':''}" data-cat="">全部 <span class="c">${day.e.length}</span></span>`
+    + cats.map(c=>`<span class="chip ${curCat===c?'on':''}" data-cat="${esc(c)}">${esc(c)} <span class="c">${counts[c]}</span></span>`).join('');
+
+  // 类型 chips（事件 / 出生 / 逝世 / 节日）
+  const tcount = {};
+  day.e.forEach(e=>{ tcount[e[0]] = (tcount[e[0]]||0)+1; });
+  $('#typeChips').innerHTML = '<span class="lbl">类型</span>'
+    + [['e','事件'],['b','出生'],['d','逝世'],['h','节日']].filter(([k])=>tcount[k])
+        .map(([k,l])=>`<span class="chip ${curType===k?'on':''}" data-type="${k}">${l} <span class="c">${tcount[k]}</span></span>`).join('');
+
+  const tags = {}, acts = {}, sens = {};
+  day.e.forEach(e=>{ if(!e[3])return;
+    (e[3][1]||[]).forEach(t=>tags[t]=(tags[t]||0)+1);
+    acts[e[3][3]]=(acts[e[3][3]]||0)+1;
+    sens[e[3][2]]=(sens[e[3][2]]||0)+1;
+  });
+  let extra = '<span class="lbl">动作</span><span class="chip '+(curAct===null?'on':'')+'" data-act="">全部</span>';
+  [['keep','原样保留'],['trim','AI精简'],['flag','待人工复核']].forEach(([k,l])=>{
+    if(acts[k]) extra += `<span class="chip ${curAct===k?'on':''}" data-act="${k}">${l} <span class="c">${acts[k]}</span></span>`;
+  });
+  Object.keys(tags).sort((a,b)=>tags[b]-tags[a]).forEach(t=>{
+    extra += `<span class="chip ${curTag===t?'on':''}" data-tag="${esc(t)}">#${esc(t)} <span class="c">${tags[t]}</span></span>`;
+  });
+  [0,1,2,3].forEach(s=>{ if(sens[s]) extra += `<span class="chip ${curSens===s?'on':''}" data-sens="${s}">敏感度 ${s} <span class="c">${sens[s]}</span></span>`; });
+  $('#extraChips').innerHTML = extra;
+
+  // 点击已选中的 chip 可取消选择
+  document.querySelectorAll('[data-type]').forEach(el=>el.onclick=()=>{ const v=el.dataset.type; curType = curType===v?'':v; buildChips(); render(); });
+  document.querySelectorAll('[data-cat]').forEach(el=>el.onclick=()=>{ const v=el.dataset.cat; curCat = (v===''||curCat===v)?null:v; buildChips(); render(); });
+  document.querySelectorAll('[data-act]').forEach(el=>el.onclick=()=>{ const v=el.dataset.act; curAct = (v===''||curAct===v)?null:v; buildChips(); render(); });
+  document.querySelectorAll('[data-tag]').forEach(el=>el.onclick=()=>{ const v=el.dataset.tag; curTag = curTag===v?null:v; buildChips(); render(); });
+  document.querySelectorAll('[data-sens]').forEach(el=>el.onclick=()=>{ const n=Number(el.dataset.sens); curSens = curSens===n?null:n; buildChips(); render(); });
+}
+buildChips();
+
+/* ---------- 视图切换 ---------- */
+document.querySelectorAll('#view button').forEach(b=>{
+  b.onclick = ()=>{
+    document.querySelectorAll('#view button').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on'); curView = b.dataset.v; render();
+  };
+});
+$('#q').addEventListener('input', e=>{ kw = e.target.value.trim(); render(); });
+
+/* ---------- 渲染 ---------- */
+function render(){
+  const day = DATA.days[curDate];
+  const di = DATES.indexOf(curDate), isToday = curDate === todayKey();
+  $('#dayTitle').innerHTML = `${day.m} 月 ${day.d} 日 <span class="n">${day.e.length} 条</span>`
+    + `<span id="dayNav">第 ${di+1} / ${DATES.length} 天${isToday?' · 今天':''}</span>`;
+  $('#festivals').innerHTML = (day.fes || []).map(f=>`<div class="fescard">
+      <div class="fesname">🎉 ${esc(f.name)}${f.since?` <span class="since">${esc(f.since)} 年设立</span>`:''}</div>
+      ${f.origin?`<div class="fesori">${esc(f.origin)}</div>`:'<div class="fesori dim">（未查到设立由来）</div>'}
+      <div class="fesmeta">${[f.time, f.area].filter(Boolean).map(esc).join(' · ')}</div>
+    </div>`).join('');
+
+  // chips 状态同步（重新渲染 chips 以更新高亮）
+  document.querySelectorAll('[data-cat]').forEach(el=>el.classList.toggle('on', (el.dataset.cat||null)===curCat));
+  document.querySelectorAll('[data-act]').forEach(el=>el.classList.toggle('on', (el.dataset.act||null)===curAct));
+  document.querySelectorAll('[data-tag]').forEach(el=>el.classList.toggle('on', (el.dataset.tag||null)===curTag));
+  document.querySelectorAll('[data-sens]').forEach(el=>el.classList.toggle('on', (el.dataset.sens===''?null:Number(el.dataset.sens))===curSens));
+
+  let list = day.e.filter(e=>{
+    const ai = e[3];
+    if(curType && tcode(curType)!==e[0]) return false;
+    if(curCat && (!ai || ai[0]!==curCat)) return false;
+    if(curAct && (!ai || ai[3]!==curAct)) return false;
+    if(curTag && (!ai || !(ai[1]||[]).includes(curTag))) return false;
+    if(curSens!==null && (!ai || ai[2]!==curSens)) return false;
+    if(kw){
+      const hay = (e[2]+' '+(ai?ai[4]:'')+' '+(ai?ai[0]:'')+' '+(ai?(ai[1]||[]).join(' '):'')).toLowerCase();
+      if(!hay.includes(kw.toLowerCase())) return false;
+    }
+    return true;
+  });
+
+  // 排序：默认按分数降序（同一天内优先展示关注度高的）
+  list = list.slice().sort((a,b)=>{
+    const sa=(a[3]&&a[3][5])||0, sb=(b[3]&&b[3][5])||0;
+    return sb-sa;
+  });
+
+  if(!list.length){ $('#list').innerHTML = '<div class="empty">没有匹配的条目</div>'; return; }
+
+  const viewCls = curView==='compare'?'compare':(curView==='outOnly'?'outOnly':'srcOnly');
+  $('#list').innerHTML = list.map(e=>{
+    const [t,y,text,ai] = e;
+    const cat = ai?ai[0]:'', tags = ai?(ai[1]||[]):[], sens = ai?ai[2]:null, act = ai?ai[3]:'', out = ai?ai[4]:'', score = ai?(ai[5]||0):0;
+    const pills = [
+      `<span class="pill type">${TYPE_CN[t]}</span>`,
+      cat?`<span class="pill cat">${esc(cat)}</span>`:'',
+      act?`<span class="pill ${act}">${{keep:'原样',trim:'AI精简',flag:'待复核'}[act]||act}</span>`:'',
+      score?`<span class="pill score">${score} 分</span>`:'',
+      sens!==null?`<span class="pill sens${sens}">敏感 ${sens}</span>`:'',
+      ...tags.map(x=>`<span class="pill tag">#${esc(x)}</span>`),
+    ].filter(Boolean).join('');
+    const lenInfo = (ai && out) ? `<span class="len">${text.length} → ${out.length} 字</span>` : '';
+    const yearHtml = y ? `<span class="yr">${esc(y)}</span>` : (t==='h' ? '<span class="yr">每年</span>' : '');
+    return `<div class="item ${act==='flag'?'flagged':''}">
+      <div class="top">${yearHtml}${pills}${lenInfo}</div>
+      <div class="${viewCls}">
+        <div class="src">${esc(text)}</div>
+        ${out?`<div class="out">${esc(out)}</div>`:(ai&&act==='keep'?'<div class="noai">（AI 判定原样即最佳）</div>':'')}
+      </div>
+      ${!ai?'<div class="noai">（该条尚未经 AI 处理）</div>':''}
+    </div>`;
+  }).join('');
+}
+
+render();
+</script>
+</body></html>

@@ -1,0 +1,29 @@
+{
+  "name": "onthisday",
+  "version": "0.2.0",
+  "private": true,
+  "description": "「历史上的今天」数据管线：简体维基数据 + 百度节日 + AI 审核精简 + 展示页",
+  "scripts": {
+    "prep": "node src/prep_merge.js",
+    "ai": "node src/ai_review.js --batch=40 --concurrency=20",
+    "ai:resume": "node src/ai_review.js --resume --batch=40 --concurrency=20",
+    "ai:estimate": "node src/ai_review.js --resume --estimate",
+    "ai:failed": "node src/ai_review.js --only-failed --batch=10 --concurrency=8",
+    "ai:repair": "node src/ai_review.js --repair --batch=10 --concurrency=8",
+    "audit": "node src/audit.js",
+    "audit:fix": "node src/audit.js --fix",
+    "festival": "node src/festival_info.js",
+    "review": "python server/review_server.py",
+    "verify:review": "pwsh -File verify_review.ps1",
+    "verify:site": "pwsh -File verify_site.ps1",
+    "site": "node src/build_site.js",
+    "site:standalone": "node src/build_site.js --standalone",
+    "style": "node src/mine_style.js",
+    "observances": "node src/build_observances.js",
+    "all": "npm run prep && npm run ai && npm run site"
+  },
+  "dependencies": {
+    "opencc-js": "^1.4.2"
+  },
+  "engines": { "node": ">=20" }
+}

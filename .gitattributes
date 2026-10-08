@@ -1,0 +1,21 @@
+# 统一换行符，避免 Windows 上提交把 LF 改成 CRLF 造成整文件 diff
+* text=auto eol=lf
+
+# 二进制/数据文件不做换行转换
+*.json  -text
+*.jsonl -text
+*.txt   -text
+*.png   -text
+*.jpg   -text
+*.ico   -text
+
+# 让 git 正确识别语言（部分编辑器/统计用得上）
+*.js    text
+*.py    text
+*.html  text
+*.md    text
+
+# 语言统计时不要把数据当代码
+data/**     linguist-vendored
+data-src/** linguist-vendored
+web/data.json linguist-vendored

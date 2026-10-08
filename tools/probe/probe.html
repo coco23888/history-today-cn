@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<!--
+  复核页运行时自检探针（由 server/review_server.py 在 /__probe.html 提供）
+
+  思路：同源把 web/review.html 原样写进本页（同步 XHR + document.write，脚本会照常执行），
+  等它拉完 /api/day 渲染好之后，读取真实的 DOM 结果，把结论塞进 <title>。
+  然后用无头 Chrome --dump-dom 抓 title 来判断：
+    - 默认是不是「今天」这一天
+    - 默认列表里有没有混进「AI 直通」条目（默认只列待复核的）
+    - 点「全部」chip 后是不是真的把所有条目都列出来了（之前这里只列 24/180，是 bug）
+    - 点「待复核」chip 后是不是只剩待复核的
+    - 上一天 / 下一天按钮、以及 URL 的 ?d= 是否同步
+  注意：探针不要用 const/let 声明 review.html 里已有的名字（$ / esc / TYPE_CN 等），
+  否则同页二次声明会抛 SyntaxError 把探针整段干掉。
+  用法见 verify_review.ps1
+-->
+<meta charset="utf-8">
+<title>RT|booting</title>
+<script>
+window.__errs = [];
+window.addEventListener('error', function (e) { window.__errs.push(e.message + '@' + e.lineno); });
+var __xhr = new XMLHttpRequest();
+__xhr.open('GET', '/review.html', false);
+__xhr.send(null);
+document.write(__xhr.responseText);
+document.close();
+</script>
+<script>
+(function () {
+  function q(s) { return document.querySelectorAll(s).length; }
+  function txt(id) {
+    var el = document.getElementById(id);
+    return el ? el.textContent.replace(/\s+/g, ' ').trim() : '(no #' + id + ')';
+  }
+  function chipText(v) {
+    var el = document.querySelector('#autoChips [data-auto="' + v + '"]');
+    return el ? el.textContent.replace(/\s+/g, ' ').trim() : '(missing auto=' + v + ')';
+  }
+  function key() { return (document.getElementById('date') || {}).value || '?'; }
+  function waitStable(prev, cb, n) {
+    n = n || 0;
+    if (n > 60) return cb();
+    setTimeout(function () {
+      if (q('#list .item') !== prev) return waitStable(q('#list .item'), cb, n + 1);
+      cb();
+    }, 100);
+  }
+  var tries = 0, R = {};
+  (function wait() {
+    if (!document.getElementById('list') || !q('#list .item')) {
+      if (++tries > 200) { document.title = 'RT|timeout|items=' + q('#list .item'); return; }
+      return setTimeout(wait, 100);
+    }
+    // --- 1. 默认状态 ---
+    var __t = new Date();
+    R.todayKey = String(__t.getMonth() + 1).padStart(2, '0') + '-' + String(__t.getDate()).padStart(2, '0');
+    R.nowInChrome = __t.getFullYear() + '-' + R.todayKey + ' ' + __t.getHours() + ':' + __t.getMinutes();
+    R.search = location.search || '(empty)';
+    R.def = q('#list .item');
+    R.defAuto = q('#list .item.auto');
+    R.date0 = key();
+    R.today0 = document.getElementById('todayBtn') ? 'yes' : 'no';
+    R.title0 = txt('dayTitle');
+    R.chips = txt('autoChips');
+    R.stats = txt('stats');
+    R.chipAllText = chipText('');
+    R.chipNeedText = chipText('need');
+    R.chipAutoText = chipText('auto');
+    R.chipDoneText = chipText('done');
+    R.chipNeedN = (R.chipNeedText.match(/(\d+)/) || [0, 0])[1];
+    R.chipDoneN = (R.chipDoneText.match(/(\d+)/) || [0, 0])[1];
+    R.fesCount = q('#festivals .fescard');
+
+    // --- 2. 点「全部」chip：应该把 180 条全列出来，并且自动勾上「显示 AI 直通」 ---
+    document.querySelector('#autoChips [data-auto=""]').click();
+    R.allBtn = q('#list .item');
+    R.allBtnAuto = q('#list .item.auto');
+    R.allBtnChecked = document.getElementById('showAuto').checked ? 'on' : 'off';
+    R.allPill = q('#list .item .pill.auto');
+
+    // --- 3. 点「待复核」chip：只剩待复核的 ---
+    document.querySelector('#autoChips [data-auto="need"]').click();
+    R.needBtn = q('#list .item');
+    R.needBtnNeed = q('#list .item .pill.need');
+    R.needBtnAuto = q('#list .item.auto');
+
+    // --- 4. 点「AI 直通」chip：只剩直通的 ---
+    document.querySelector('#autoChips [data-auto="auto"]').click();
+    R.autoBtn = q('#list .item');
+    R.autoBtnAuto = q('#list .item.auto');
+    R.autoBtnNeed = q('#list .item .pill.need');
+
+    // --- 4b. 点「已标记」chip：只剩人工标记过的 ---
+    document.querySelector('#autoChips [data-auto="done"]').click();
+    R.doneBtn = q('#list .item');
+    R.doneBtnAuto = q('#list .item.auto');
+    R.doneBtnNeed = q('#list .item .pill.need');
+    R.doneBtnMarked = q('#list .item .pill.human, #list .item .pill.humanNo, #list .item .pill.humanEdit');
+
+    // --- 5. 取消过滤，测上一天/下一天 ---
+    document.querySelector('#autoChips [data-auto=""]').click();
+    var before = key();
+    document.getElementById('nextDay').click();
+    setTimeout(function () {
+      var after = key();
+      R.stepFrom = before; R.stepTo = after;
+      R.urlAfter = location.search.replace('?d=', '');
+      R.nextIsTomorrow = after === R.todayKey ? 'same' : 'ok';
+      document.getElementById('prevDay').click();
+      setTimeout(function () {
+        R.stepBack = key();
+        R.backToToday = key() === before ? 'ok' : 'no';
+        R.searchBack = location.search || '(empty)';
+        document.title = 'RT|' + (window.__errs.length ? ('ERR:' + window.__errs.join(';')) : 'noerr')
+          + '|' + Object.keys(R).map(function (k) { return k + '=' + R[k]; }).join('|');
+      }, 900);
+    }, 900);
+  })();
+})();
+</script>

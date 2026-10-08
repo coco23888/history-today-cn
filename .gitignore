@@ -1,0 +1,30 @@
+# 依赖与构建产物
+node_modules/
+out/
+dist/
+__pycache__/
+*.pyc
+
+# 展示页的单文件版（10 MB，可用 npm run site:standalone 随时再生成）
+web/standalone.html
+
+# 密钥：只提交 .env.example
+config/.env
+.env
+.env.local
+
+# 临时文件
+*.tmp
+*.log
+*.bak
+_dump*.json
+
+# 编辑器 / 系统
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ⚠️ 注意：data/ai/results.jsonl 是 AI 进度文件，必须提交（重建要花 4 小时 / ¥29）。
+# 旧版本这里曾写着 data/ai/*.jsonl，那会把进度文件也忽略掉 —— 不要再加回来。

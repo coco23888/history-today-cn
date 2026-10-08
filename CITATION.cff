@@ -1,0 +1,31 @@
+cff-version: 1.2.0
+title: 历史上的今天 · 中文数据管线
+message: >-
+  如果这份数据对你的项目有帮助，请标注来源。
+  历史数据来自中文维基百科（CC BY-SA 4.0），节日数据来自百度百科。
+type: dataset
+version: 1.0.0
+date-released: 2026-10-08
+repository-code: "https://github.com/coco23888/history-today-cn"
+license: MIT
+keywords:
+  - 历史上的今天
+  - on-this-day
+  - 中文数据集
+  - 维基百科
+  - CC-BY-SA-4.0
+abstract: >-
+  把中文维基百科的「历史上的今天」整理成可直接使用的中文数据集：
+  62,927 条 · 366 天全覆盖 · 全部经 AI 清洗、分类、打敏感标签并按中国关注度评分。
+  原始文本已由 OpenCC 转简体，格式残留已清理。
+
+# 数据部分依 CC BY-SA 4.0 授权，署名请使用 preferred-citation
+preferred-citation:
+  type: dataset
+  title: 历史上的今天 · 中文数据管线
+  year: 2026
+  url: "https://github.com/coco23888/history-today-cn"
+  license: CC-BY-SA-4.0
+  notes: >-
+    历史条目来自中文维基百科（CC BY-SA 4.0）；节日数据来自百度百科，版权归百度所有。
+    署名建议：「数据来源：中文维基百科（CC BY-SA 4.0）」。

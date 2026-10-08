@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<!--
+  展示页运行时自检探针（由 server/review_server.py 在 /__probe_site.html 提供）
+
+  和 __probe.html 同样的思路：同源把 web/index.html（18.5 KB 的空壳）写进本页，
+  它会去 fetch('./data.json')（10 MB），等渲染完之后检查结果。
+  验的是「拆分后还能不能用」——之前所有数据都内嵌在 HTML 里，拆开后最容易坏的就是加载这一步。
+  用法见 onthisday/verify_site.ps1
+-->
+<meta charset="utf-8">
+<title>RT|booting</title>
+<script>
+window.__errs = [];
+window.addEventListener('error', function (e) { window.__errs.push((e.message || e) + '@' + e.lineno); });
+var __xhr = new XMLHttpRequest();
+__xhr.open('GET', '/index.html', false);
+__xhr.send(null);
+document.write(__xhr.responseText);
+document.close();
+</script>
+<script>
+(function () {
+  function q(s) { return document.querySelectorAll(s).length; }
+  function one(s) { return document.querySelector(s); }
+  function txt(el) { return el ? el.textContent.replace(/\s+/g, ' ').trim() : '(missing)'; }
+  var tries = 0, R = {};
+  (function wait() {
+    if (!one('#list') || !q('#list .item')) {
+      if (++tries > 250) {
+        document.title = 'RT|timeout|boot=' + txt(one('#boot')) + '|items=' + q('#list .item');
+        return;
+      }
+      return setTimeout(wait, 100);
+    }
+    var t = new Date();
+    R.todayKey = String(t.getMonth() + 1).padStart(2, '0') + '-' + String(t.getDate()).padStart(2, '0');
+    R.items = q('#list .item');
+    R.bootHidden = one('#boot') ? (one('#boot').style.display || 'visible') : 'gone';
+    R.dateSel = (one('#date') || {}).value || '?';
+    R.dayTitle = txt(one('#dayTitle'));
+    R.chips = txt(one('#typeChips')) + ' || ' + txt(one('#catChips'));
+    R.fesCards = q('#festivals .fescard');
+    R.hasPrev = !!one('#prevDay');
+    R.hasNext = !!one('#nextDay');
+    R.todayOn = one('#todayBtn') && one('#todayBtn').classList.contains('on') ? 'yes' : 'no';
+    R.search = location.search || '(empty)';
+    R.stats = txt(one('#stats'));
+    // 视图切换 + 下一天
+    var before = one('#date').value;
+    one('#nextDay').click();
+    setTimeout(function () {
+      R.stepTo = one('#date').value;
+      R.stepChanged = R.stepTo !== before ? 'ok' : 'no';
+      R.itemsAfterStep = q('#list .item');
+      R.urlAfterStep = location.search.replace('?d=', '');
+      one('#todayBtn').click();
+      setTimeout(function () {
+        R.backToToday = one('#date').value === R.todayKey ? 'ok' : 'no';
+        R.searchBack = location.search || '(empty)';
+        document.title = 'RT|' + (window.__errs.length ? ('ERR:' + window.__errs.join(';')) : 'noerr')
+          + '|' + Object.keys(R).map(function (k) { return k + '=' + R[k]; }).join('|');
+      }, 800);
+    }, 800);
+  })();
+})();
+</script>

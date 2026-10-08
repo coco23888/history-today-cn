@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>历史上的今天 · 人工复核</title>
+<style>
+:root{--bg:#0d1117;--panel:#161b22;--panel2:#1c2330;--line:#2a3240;--fg:#e6edf3;--dim:#8b949e;--dim2:#6e7681;
+--accent:#58a6ff;--green:#3fb950;--red:#f85149;--amber:#d29922;--purple:#bc8cff;--orange:#ff9e64}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.6 -apple-system,"Segoe UI","Microsoft YaHei",system-ui,sans-serif}
+a{color:var(--accent)}
+.wrap{max-width:1240px;margin:0 auto;padding:0 18px 80px}
+
+header{background:linear-gradient(160deg,#161b22,#0d1117 70%);border-bottom:1px solid var(--line);padding:20px 0 16px}
+h1{margin:0 0 5px;font-size:21px}
+.sub{color:var(--dim);font-size:13px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(104px,1fr));gap:9px;margin:15px 0 0}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:9px 12px}
+.stat b{display:block;font-size:18px}
+.stat span{color:var(--dim);font-size:11.5px}
+.stat.g b{color:var(--green)}.stat.r b{color:var(--red)}.stat.a b{color:var(--amber)}.stat.p b{color:var(--purple)}
+
+.bar{position:sticky;top:0;z-index:40;background:rgba(13,17,23,.96);backdrop-filter:blur(8px);
+border-bottom:1px solid var(--line);padding:9px 0}
+.bar .inner{max-width:1240px;margin:0 auto;padding:0 18px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+select,input[type=search]{background:var(--panel);border:1px solid var(--line);color:var(--fg);border-radius:7px;padding:6px 10px;font:inherit;font-size:13px}
+select:focus,input:focus{outline:none;border-color:var(--accent)}
+.toggle{display:flex;border:1px solid var(--line);border-radius:7px;overflow:hidden}
+.toggle button{background:var(--panel);border:0;color:var(--dim);padding:6px 11px;font:inherit;font-size:12.5px;cursor:pointer}
+.toggle button.on{background:#1f6feb;color:#fff}
+label.cb{display:flex;align-items:center;gap:5px;background:var(--panel);border:1px solid var(--line);
+border-radius:7px;padding:6px 10px;font-size:12.5px;color:var(--dim);cursor:pointer;user-select:none}
+label.cb:hover{color:var(--fg)}
+label.cb input{accent-color:#1f6feb;margin:0;cursor:pointer}
+label.cb.hot{border-color:#1f6f36;color:var(--green)}
+
+.dnav{display:flex;align-items:center;gap:6px}
+.dnav button{background:var(--panel);border:1px solid var(--line);color:var(--fg);border-radius:7px;
+padding:6px 11px;font:inherit;font-size:13px;cursor:pointer;line-height:1.2}
+.dnav button:hover{border-color:var(--accent);color:var(--accent)}
+.dnav button.on{background:#1f6feb;border-color:#1f6feb;color:#fff}
+.dnav button.mini{color:var(--dim);font-size:12.5px;padding:6px 9px}
+.dnav #date{min-width:210px;font-variant-numeric:tabular-nums}
+.dlabel{color:var(--dim2);font-size:11.5px;margin-left:2px;white-space:nowrap}
+
+.chips .seg{display:flex;border:1px solid var(--line);border-radius:20px;overflow:hidden}
+.chips .seg .chip{border:0;border-radius:0;margin:0}
+.chips .seg .chip.on{background:#1f6feb;color:#fff}
+
+h2{font-size:17px;margin:24px 0 8px;padding-bottom:8px;border-bottom:1px solid var(--line);display:flex;gap:9px;align-items:center;flex-wrap:wrap}
+h2 .n{font-size:12px;color:var(--dim2);font-weight:400;background:var(--panel2);padding:2px 9px;border-radius:20px;border:1px solid var(--line)}
+.fes{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 0}
+.fescard{background:#1d1806;border:1px solid #7a5c11;border-radius:9px;padding:8px 12px;max-width:520px}
+.fescard .fesname{color:var(--amber);font-size:13.5px;font-weight:600}
+.fescard .since{color:var(--dim2);font-weight:400;font-size:12px;margin-left:5px}
+.fescard .fesori{color:var(--fg);font-size:13px;margin-top:4px;line-height:1.5}
+.fescard .fesori.dim{color:var(--dim2)}
+.fescard .fesmeta{color:var(--dim2);font-size:11.5px;margin-top:4px}
+
+.chips{display:flex;gap:5px;flex-wrap:wrap;margin:10px 0}
+.chips .lbl{color:var(--dim2);font-size:12px;align-self:center;margin-right:3px}
+.chip{background:var(--panel2);border:1px solid var(--line);color:var(--dim);font-size:12.5px;
+padding:3px 10px;border-radius:20px;cursor:pointer;user-select:none;transition:.12s}
+.chip:hover{color:var(--fg);border-color:var(--dim2)}
+.chip.on{background:#1f6feb;border-color:#1f6feb;color:#fff}
+.chip .c{opacity:.7;margin-left:5px;font-size:11px}
+
+.item{background:var(--panel);border:1px solid var(--line);border-radius:10px;margin-bottom:9px;padding:12px 14px}
+.item.flagged{border-left:3px solid var(--red)}
+.item.approved{border-left:3px solid var(--green);opacity:.72}
+.item.rejected{border-left:3px solid var(--dim2);opacity:.5}
+.item.auto{border-left:3px solid #1f6f36}
+.item .top{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:6px}
+.item .yr{color:var(--amber);font-weight:700;font-size:13px;font-variant-numeric:tabular-nums}
+.pill{font-size:11px;padding:1.5px 7px;border-radius:5px;background:#0d1117;border:1px solid var(--line);color:var(--dim)}
+.pill.cat{color:var(--accent);border-color:#1f4d80}
+.pill.tag{color:var(--purple);border-color:#5a3f96}
+.pill.type{color:var(--fg);border-color:var(--dim2)}
+.pill.s0{color:var(--green);border-color:#1f6f36}
+.pill.s1{color:var(--amber);border-color:#7a5c11}
+.pill.s2{color:var(--orange);border-color:#8a4b1a}
+.pill.s3{color:var(--red);border-color:#8b2c26}
+.pill.keep{color:var(--dim2)}
+.pill.trim{color:var(--green);border-color:#1f6f36}
+.pill.flag{color:var(--red);border-color:#8b2c26}
+.pill.score{color:var(--amber);border-color:#7a5c11;font-weight:700}
+.pill.human{color:var(--green);border-color:#1f6f36;background:#0d2818}
+.pill.humanNo{color:var(--red);border-color:#8b2c26;background:#2b0f0d}
+.pill.humanEdit{color:var(--accent);border-color:#1f4d80;background:#0d1a2b}
+.pill.auto{color:var(--green);border-color:#1f6f36;background:#0a1f12}
+.pill.need{color:var(--orange);border-color:#8a4b1a;background:#2b180d;font-weight:700}
+.pill.annual{color:var(--purple);border-color:#5a3f96}
+
+.src{color:var(--dim);font-size:13.5px}
+.out{color:var(--green);font-size:14.5px;margin-top:4px}
+.outonly .src{display:none}
+.srconly .out{display:none}
+.src,.out{word-break:break-word}
+.lab{color:var(--dim2);font-size:11.5px;margin-right:5px}
+.acts{display:flex;gap:6px;margin-top:9px;flex-wrap:wrap}
+.acts button{font:inherit;font-size:12.5px;padding:4px 12px;border-radius:7px;cursor:pointer;
+border:1px solid var(--line);background:var(--panel2);color:var(--dim)}
+.acts button:hover{color:var(--fg)}
+.acts button.ok.on{background:#0d2818;border-color:#1f6f36;color:var(--green)}
+.acts button.no.on{background:#2b0f0d;border-color:#8b2c26;color:var(--red)}
+.acts button.ed{background:#12233a;border-color:#1f4d80;color:var(--accent)}
+.acts button.save{background:#0d2818;border-color:#1f6f36;color:var(--green);font-weight:600}
+.acts button.cancel{color:var(--dim2)}
+.editbox{width:100%;margin-top:8px;background:#0d1117;border:1px solid var(--accent);border-radius:8px;
+color:var(--fg);font:inherit;font-size:14px;padding:9px 11px;resize:vertical;min-height:62px}
+.editbox:focus{outline:none}
+.hint{color:var(--dim2);font-size:11.5px;margin-top:4px}
+.empty{color:var(--dim);text-align:center;padding:50px 0}
+.banner{background:#2b2200;border:1px solid #7a5c11;color:var(--amber);padding:9px 13px;border-radius:8px;
+margin:12px 0;font-size:13px}
+footer{color:var(--dim2);font-size:12px;text-align:center;margin-top:44px;padding-top:18px;border-top:1px solid var(--line)}
+</style>
+</head>
+<body>
+<header><div class="wrap" style="padding-bottom:0">
+  <h1>历史上的今天 · 人工复核</h1>
+  <div class="sub">AI 精简/原样保留且敏感度 0 的条目<b>已默认通过</b>（可手动改为不展示）· 只需复核 AI 标了「待复核」或敏感度 ≥2 的条目<br>
+  页面默认<b>只列出待复核条目</b>；想看全部（含 AI 直通）就勾「显示 AI 直通」，或点下面 AI 判定里的「全部」/「⚡ AI 直通」<br>
+  键盘：<b>← →</b> 上一天/下一天 · <b>t</b> 回到今天 · <b>a</b> 通过 · <b>r</b> 不展示 · <b>e</b> 编辑 · <b>j/k</b> 上下条<br>
+  跳走的日期会记在网址 <code>?d=MM-DD</code>（刷新不变）；停在「今天」时地址保持干净，下次打开仍是今天</div>
+  <div class="stats" id="stats"></div>
+</div></header>
+
+<div class="bar"><div class="inner">
+  <div class="dnav">
+    <button id="prevDay" title="上一天（快捷键 ←）">◀</button>
+    <select id="date"></select>
+    <button id="nextDay" title="下一天（快捷键 →）">▶</button>
+    <button id="todayBtn" title="跳到今天（快捷键 t）">今天</button>
+  </div>
+  <select id="type">
+    <option value="">全部类型</option>
+    <option value="events">事件</option>
+    <option value="births">出生</option>
+    <option value="deaths">逝世</option>
+    <option value="holidays">节日</option>
+  </select>
+  <select id="sort">
+    <option value="score">按分数 ↓</option>
+    <option value="score_asc">按分数 ↑</option>
+    <option value="year">按年份</option>
+  </select>
+  <div class="toggle" id="view">
+    <button data-v="both" class="on">对比</button>
+    <button data-v="out">只看成品</button>
+    <button data-v="src">只看原文</button>
+  </div>
+  <label class="cb" id="showAutoWrap" title="AI 直通的条目默认收起（它们已经算「通过」了），勾选后和待复核的一起铺出来">
+    <input type="checkbox" id="showAuto"> 显示 AI 直通
+  </label>
+  <input type="search" id="q" placeholder="🔍 搜索…" style="flex:1;min-width:130px">
+</div></div>
+
+<div class="wrap">
+  <div id="banner"></div>
+  <h2 id="dayTitle">—<span class="dlabel" id="dayNav"></span></h2>
+  <div class="fes" id="festivals"></div>
+
+  <div class="chips" id="typeChips"></div>
+  <div class="chips" id="autoChips"></div>
+  <div class="chips" id="statusChips"></div>
+  <div class="chips" id="catChips"></div>
+  <div class="chips" id="extraChips"></div>
+
+  <div id="list"></div>
+</div>
+<footer>数据：维基百科（CC BY-SA）+ 百度百科官方源 · AI：DeepSeek-V3.2 via SiliconFlow · 人工标记存于 data/review.json<br>
+AI 精简/原样保留且敏感度 0 的条目「自动通过」（默认展示）；标了 flag 或敏感度 ≥2 的才需要人工点通过 / 不展示</footer>
+
+<script>
+const $ = (s, r = document) => r.querySelector(s);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+const TYPE_CN = { events: '事件', births: '出生', deaths: '逝世', holidays: '节日' };
+
+let DAYS = {}, DAY = null, DAY_KEYS = [], curDate = '', curType = '', curCat = null, curTag = null,
+    curSens = null, curAct = null, curHuman = null, curAuto = null, curView = 'both', kw = '', sortBy = 'score';
+let showAuto = false;          // 是否把「AI 直通」的条目也铺出来（默认不铺，只看要复核的）
+let STATS = {};
+let TODAY = '';                // 今天对应的 MM-DD，用来做「今天」跳转和默认日期
+
+/* ---------- 通用请求 ---------- */
+async function api(path, opts) {
+  const r = await fetch(path, opts);
+  if (!r.ok) throw new Error('HTTP ' + r.status);
+  return r.json();
+}
+
+/* MM-DD：补零成两位，和后端 / 数据里的键保持一致 */
+function padKey(k) {
+  const m = String(k || '').match(/^(\d{1,2})-(\d{1,2})$/);
+  return m ? String(+m[1]).padStart(2, '0') + '-' + String(+m[2]).padStart(2, '0') : '';
+}
+
+/* MM-DD 按日历前后推一天，跨月/跨年自动进位（不依赖 Date，避免时区坑） */
+const MONTH_DAYS = [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];   // 2 月按 29 算，覆盖闰日 2-29
+function stepDate(key, delta) {
+  let [m, d] = key.split('-').map(Number);
+  d += delta;
+  while (d < 1) { m--; if (m < 1) m = 12; d += MONTH_DAYS[m - 1]; }
+  while (d > MONTH_DAYS[m - 1]) { d -= MONTH_DAYS[m - 1]; m++; if (m > 12) m = 1; }
+  return String(m).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+}
+
+function todayKey() {
+  const t = new Date();
+  return String(t.getMonth() + 1).padStart(2, '0') + '-' + String(t.getDate()).padStart(2, '0');
+}
+
+/* ---------- 初始化 ---------- */
+(async function init() {
+  try {
+    DAYS = await api('/api/days');
+  } catch (e) {
+    $('#banner').innerHTML = '<div class="banner">⚠️ 无法连接后端。请先启动服务：<br><code>python server/review_server.py</code> 然后访问 <code>http://127.0.0.1:8770</code></div>';
+    return;
+  }
+  DAY_KEYS = Object.keys(DAYS).sort((a, b) => {
+    const [am, ad] = a.split('-').map(Number), [bm, bd] = b.split('-').map(Number);
+    return am - bm || ad - bd;
+  });
+  // 默认打开「今天」那一页；今天不在数据里（比如 2-29 平年）就退到最近的日期
+  TODAY = todayKey();
+  const saved = padKey(new URLSearchParams(location.search).get('d'));
+  curDate = (saved && DAYS[saved]) ? saved : (DAYS[TODAY] ? TODAY : nearestKey(TODAY));
+  $('#date').innerHTML = DAY_KEYS.map(k => {
+    const d = DAYS[k];
+    return `<option value="${d.key || k}"${(d.key || k) === curDate ? ' selected' : ''}>${d.m} 月 ${d.d} 日 · ${d.n} 条${d.f.length ? ' 🎉' : ''}</option>`;
+  }).join('');
+  await loadStats();
+  await loadDay(curDate);
+})();
+
+function nearestKey(key) {
+  if (!DAY_KEYS.length) return '';
+  const target = Number(key.replace('-', ''));
+  let best = DAY_KEYS[0], bestDiff = Infinity;
+  for (const k of DAY_KEYS) {
+    const diff = Math.abs(Number(k.replace('-', '')) - target);
+    if (diff < bestDiff) { bestDiff = diff; best = k; }
+  }
+  return best;
+}
+
+async function loadStats() {
+  try { STATS = await api('/api/stats'); } catch (e) { STATS = {}; }
+  const s = STATS;
+  const need = s.needHuman || 0, auto = s.autoPass || 0;
+  $('#stats').innerHTML = [
+    ['p', (s.aiDone || 0).toLocaleString(), 'AI 已处理'],
+    ['g', auto.toLocaleString(), 'AI 直通（默认展示）'],
+    ['a', need.toLocaleString(), '待人工复核'],
+    ['', (s.approved || 0).toLocaleString(), '人工通过'],
+    ['r', (s.rejected || 0).toLocaleString(), '不展示'],
+    ['', (s.edited || 0).toLocaleString(), '已手改'],
+    ['', (s.total || 0).toLocaleString(), '总条目'],
+  ].map(([k, v, l]) => `<div class="stat ${k}"><b>${v}</b><span>${l}</span></div>`).join('');
+}
+
+async function loadDay(key) {
+  curDate = key;
+  DAY = await api('/api/day/' + encodeURIComponent(key));
+  curCat = curTag = curAct = curHuman = curAuto = null;
+  const need = DAY.entries.filter(e => e.need).length;
+  const auto = DAY.entries.filter(e => e.auto).length;
+  const marked = DAY.entries.filter(e => (DAY.reviews[e.id] || {}).status).length;
+  const i = DAY_KEYS.indexOf(key);
+  const isToday = key === TODAY;
+  $('#dayTitle').innerHTML = `${DAY.month} 月 ${DAY.day} 日 <span class="n">${DAY.entries.length} 条 · ⚠ 待复核 ${need} · ⚡ AI直通 ${auto} · 人工已标记 ${marked}</span>`
+    + `<span class="dlabel">第 ${i + 1} / ${DAY_KEYS.length} 天${isToday ? ' · 今天' : ''}`
+    + (isToday ? '' : ` · <a href="#" id="goToday">回到今天</a>`) + '</span>';
+  // 同步日期下拉与前后一天按钮（防止下拉框显示和实际加载的日期不一致）
+  const sel = $('#date');
+  if (sel.value !== key) sel.value = key;
+  $('#prevDay').disabled = i <= 0;
+  $('#nextDay').disabled = i < 0 || i >= DAY_KEYS.length - 1;
+  $('#prevDay').style.opacity = $('#prevDay').disabled ? .4 : 1;
+  $('#nextDay').style.opacity = $('#nextDay').disabled ? .4 : 1;
+  const gt = $('#goToday');
+  if (gt) gt.onclick = ev => { ev.preventDefault(); goDate(TODAY); };
+  $('#todayBtn').classList.toggle('on', isToday);      // 当前就是今天 -> 「今天」按钮高亮
+  // 只有跳到了「非今天」才往 URL 写 ?d=；停在今天就保持干净地址，这样刷新/重开永远是今天
+  window.history.replaceState(null, '', isToday ? location.pathname : '?d=' + key);
+  $('#festivals').innerHTML = (DAY.fes && DAY.fes.length ? DAY.fes : (DAY.festivals || []).map(n => ({ name: n })))
+    .map(f => `<div class="fescard">
+      <div class="fesname">🎉 ${esc(f.name)}${f.since ? ` <span class="since">${esc(f.since)} 年设立</span>` : ''}</div>
+      ${f.origin ? `<div class="fesori">${esc(f.origin)}</div>` : '<div class="fesori dim">（未查到设立由来）</div>'}
+      <div class="fesmeta">${[f.time, f.area].filter(Boolean).map(esc).join(' · ')}</div>
+    </div>`).join('');
+  buildChips();
+  render();
+}
+
+/* 跳日期：写进 URL 的 ?d=，刷新后还停在同一天 */
+function goDate(key) {
+  if (!key || !DAYS[key]) return;
+  $('#date').value = key;
+  loadDay(key);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+function stepDay(delta) {
+  const i = DAY_KEYS.indexOf(curDate);
+  if (i < 0) return;
+  const t = i + delta;
+  if (t < 0 || t >= DAY_KEYS.length) return;
+  goDate(DAY_KEYS[t]);
+}
+
+/* ---------- chips（点击已选中的可取消） ---------- */
+function buildChips() {
+  const E = DAY.entries;
+  const pick = (fn) => { const m = {}; E.forEach(e => { const k = fn(e); if (k != null) (Array.isArray(k) ? k : [k]).forEach(x => m[x] = (m[x] || 0) + 1); }); return m; };
+
+  // 类型
+  const tc = pick(e => e.type);
+  $('#typeChips').innerHTML = '<span class="lbl">类型</span>'
+    + ['events', 'births', 'deaths', 'holidays'].filter(t => tc[t])
+        .map(t => `<span class="chip ${curType === t ? 'on' : ''}" data-type="${t}">${TYPE_CN[t]} <span class="c">${tc[t]}</span></span>`).join('');
+
+  // 人工状态
+  const hst = { pending: 0, approved: 0, rejected: 0, edited: 0 };
+  E.forEach(e => {
+    const r = DAY.reviews[e.id];
+    if (!r || !r.status) hst.pending++; else hst[r.status]++;
+    if (r && r.text) hst.edited++;
+  });
+  let sh = '<span class="lbl">复核</span>';
+  [['pending', '未复核'], ['approved', '已通过'], ['rejected', '已拒'], ['edited', '已手改']]
+    .forEach(([k, l]) => { if (hst[k]) sh += `<span class="chip ${curHuman === k ? 'on' : ''}" data-human="${k}">${l} <span class="c">${hst[k]}</span></span>`; });
+  $('#statusChips').innerHTML = sh;
+
+  // AI 直通 / 待人工
+  // 注意计数要和「点了之后真的能列出多少条」一致，否则会出现「全部 180 但只列出 24」这种错觉
+  const autoN = E.filter(e => e.auto).length, needN = E.filter(e => e.need).length;
+  const doneN = E.length - autoN - needN;            // 已有人工标记（通过 / 不展示 / 手改）
+  const allN = showAuto || curAuto !== null ? E.length : needN + doneN;
+  $('#autoChips').innerHTML = '<span class="lbl">AI 判定</span>'
+    + `<span class="chip ${curAuto === null ? 'on' : ''}" data-auto="" title="不按 AI 判定过滤。会顺手勾上「显示 AI 直通」好把全部条目铺出来；想收起直通就取消那个勾选">全部 <span class="c">${allN}</span></span>`
+    + (autoN ? `<span class="chip ${curAuto === 'auto' ? 'on' : ''}" data-auto="auto" title="只看 AI 直通条目（默认展示、可改为不展示）">⚡ AI 直通 <span class="c">${autoN}</span></span>` : '')
+    + (needN ? `<span class="chip ${curAuto === 'need' ? 'on' : ''}" data-auto="need" title="只看还需要人工点通过/不展示的条目">⚠ 待复核 <span class="c">${needN}</span></span>` : '')
+    + (doneN ? `<span class="chip ${curAuto === 'done' ? 'on' : ''}" data-auto="done" title="只看你已经标记过的条目（通过 / 不展示 / 手改）">☑ 已标记 <span class="c">${doneN}</span></span>` : '');
+
+  // 分类
+  const cc = pick(e => e.cat || null);
+  $('#catChips').innerHTML = '<span class="lbl">分类</span><span class="chip ' + (curCat === null ? 'on' : '') + '" data-cat="">全部</span>'
+    + Object.entries(cc).sort((a, b) => b[1] - a[1])
+        .map(([c, n]) => `<span class="chip ${curCat === c ? 'on' : ''}" data-cat="${esc(c)}">${esc(c)} <span class="c">${n}</span></span>`).join('');
+
+  // 动作 / 标签 / 敏感度
+  const ac = pick(e => e.act || null), tg = pick(e => (e.tags && e.tags.length) ? e.tags : null), sc = pick(e => e.act ? e.sens : null);
+  let ex = '<span class="lbl">动作</span><span class="chip ' + (curAct === null ? 'on' : '') + '" data-act="">全部</span>';
+  [['keep', '原样'], ['trim', 'AI精简'], ['flag', '待复核']].forEach(([k, l]) => {
+    if (ac[k]) ex += `<span class="chip ${curAct === k ? 'on' : ''}" data-act="${k}">${l} <span class="c">${ac[k]}</span></span>`;
+  });
+  Object.entries(tg).sort((a, b) => b[1] - a[1]).forEach(([t, n]) => {
+    ex += `<span class="chip ${curTag === t ? 'on' : ''}" data-tag="${esc(t)}">#${esc(t)} <span class="c">${n}</span></span>`;
+  });
+  [0, 1, 2, 3].forEach(s => {
+    if (sc[s]) ex += `<span class="chip ${curSens === s ? 'on' : ''}" data-sens="${s}">敏感 ${s} <span class="c">${sc[s]}</span></span>`;
+  });
+  $('#extraChips').innerHTML = ex;
+
+  const bind = (attr, set) => document.querySelectorAll(`[data-${attr}]`).forEach(el => {
+    el.onclick = () => { set(el.dataset[attr]); buildChips(); render(); };
+  });
+  bind('type', v => curType = (curType === v ? '' : v));
+  bind('human', v => curHuman = (curHuman === v ? null : v));
+  bind('auto', v => {
+    if (v === '' || curAuto === v) curAuto = null;    // 再点一次 = 取消过滤
+    else curAuto = v;
+    // 点「全部」的含义就是不按 AI 判定过滤 —— 那就把直通条目也铺出来，
+    // 不然 180 条的日期只列出 24 条，会以为数据丢了。想收起直通就取消勾选「显示 AI 直通」。
+    if (curAuto === null || curAuto === 'auto') { showAuto = true; $('#showAuto').checked = true; }
+    else { showAuto = false; $('#showAuto').checked = false; }
+    syncAutoBar();
+  });
+  bind('cat', v => curCat = (v === '' || curCat === v) ? null : v);
+  bind('act', v => curAct = (v === '' || curAct === v) ? null : v);
+  bind('tag', v => curTag = (curTag === v ? null : v));
+  bind('sens', v => { const n = Number(v); curSens = (curSens === n ? null : n); });
+}
+
+/* ---------- 渲染 ---------- */
+function render() {
+  let list = (DAY.entries || []).filter(e => {
+    // AI 直通的条目默认收起来（它们已经算「通过 / 展示」了）。
+    // 只有开了「显示 AI 直通」，或点了「⚡ AI 直通」筛选，才会铺出来看。
+    if (e.auto && !showAuto && curAuto !== 'auto') return false;
+    if (curAuto === 'auto' && !e.auto) return false;
+    if (curAuto === 'need' && !e.need) return false;
+    if (curAuto === 'done' && (e.auto || e.need)) return false;
+    if (curType && e.type !== curType) return false;
+    if (curCat && e.cat !== curCat) return false;
+    if (curAct && e.act !== curAct) return false;
+    if (curTag && !(e.tags || []).includes(curTag)) return false;
+    if (curSens !== null && e.sens !== curSens) return false;
+    if (curHuman !== null) {
+      const r = DAY.reviews[e.id] || {};
+      if (curHuman === 'pending') { if (r.status) return false; }
+      else if (curHuman === 'edited') { if (!r.text) return false; }
+      else if (r.status !== curHuman) return false;
+    }
+    if (kw) {
+      const hay = (e.src + ' ' + (e.out || '') + ' ' + (e.cat || '') + ' ' + (e.tags || []).join(' ')).toLowerCase();
+      if (!hay.includes(kw.toLowerCase())) return false;
+    }
+    return true;
+  });
+
+  if (sortBy === 'score') list.sort((a, b) => (b.score || 0) - (a.score || 0) || a.id.localeCompare(b.id));
+  else if (sortBy === 'score_asc') list.sort((a, b) => (a.score || 999) - (b.score || 999) || a.id.localeCompare(b.id));
+  else list.sort((a, b) => String(b.year).localeCompare(String(a.year), 'zh', { numeric: true }));
+
+  if (!list.length) { $('#list').innerHTML = '<div class="empty">没有匹配的条目</div>'; return; }
+
+  $('#list').innerHTML = list.map(e => {
+    const rev = DAY.reviews[e.id] || {};
+    const humanText = rev.text || '';
+    const shown = humanText || e.out || '';
+    const cls = rev.status === 'approved' ? 'approved' : rev.status === 'rejected' ? 'rejected'
+      : (e.act === 'flag' ? 'flagged' : (e.auto ? 'auto' : ''));
+    const pills = [
+      `<span class="pill type">${TYPE_CN[e.type] || e.type}</span>`,
+      e.year ? `<span class="pill">${esc(e.year)} 年</span>` : (e.annual ? '<span class="pill annual">每年</span>' : ''),
+      e.cat && e.cat !== '其他' ? `<span class="pill cat">${esc(e.cat)}</span>` : '',
+      e.act ? `<span class="pill ${e.act}">${{ keep: '原样', trim: 'AI精简', flag: 'AI待复核' }[e.act] || e.act}</span>` : '<span class="pill">未处理</span>',
+      e.score ? `<span class="pill score">${e.score} 分</span>` : '',
+      e.act ? `<span class="pill s${e.sens}">敏感 ${e.sens}</span>` : '',
+      e.auto ? '<span class="pill auto">⚡ 自动通过</span>' : '',
+      e.need ? '<span class="pill need">⚠ 待复核</span>' : '',
+      (e.tags || []).map(t => `<span class="pill tag">#${esc(t)}</span>`).join(''),
+      rev.status === 'approved' ? '<span class="pill human">✓ 人工通过</span>' : '',
+      rev.status === 'rejected' ? '<span class="pill humanNo">✗ 不展示</span>' : '',
+      humanText ? '<span class="pill humanEdit">✎ 已手改</span>' : '',
+    ].filter(Boolean).join('');
+    const viewCls = curView === 'out' ? 'outonly' : curView === 'src' ? 'srconly' : '';
+    return `<div class="item ${cls}" data-id="${esc(e.id)}">
+      <div class="top">${pills}</div>
+      <div class="${viewCls}">
+        <div class="src"><span class="lab">原文</span>${esc(e.src)}</div>
+        ${shown ? `<div class="out"><span class="lab">成品</span>${esc(shown)}</div>` : ''}
+      </div>
+      <div class="acts">
+        ${e.auto
+          ? '<span class="hint" style="align-self:center;margin-right:4px">已默认展示（无需操作）</span>'
+            + '<button class="no" data-do="rejected">🚫 改为不展示</button>'
+          : `<button class="ok ${rev.status === 'approved' ? 'on' : ''}" data-do="approved">✓ 通过</button>
+        <button class="no ${rev.status === 'rejected' ? 'on' : ''}" data-do="rejected">✗ 不展示</button>`}
+        <button class="ed" data-do="edit">✎ 编辑</button>
+        ${rev.status || humanText ? '<button class="cancel" data-do="reset">↺ 重置为 AI 默认</button>' : ''}
+      </div>
+      <div class="editwrap"></div>
+    </div>`;
+  }).join('');
+
+  // 事件绑定
+  $('#list').querySelectorAll('.item').forEach(node => {
+    const id = node.dataset.id;
+    node.querySelectorAll('[data-do]').forEach(btn => {
+      btn.onclick = () => onAction(node, id, btn.dataset.do);
+    });
+  });
+}
+
+/* ---------- 操作 ---------- */
+async function onAction(node, id, act) {
+  const e = (DAY.entries || []).find(x => x.id === id);
+  const rev = DAY.reviews[id] || {};
+
+  if (act === 'approved' || act === 'rejected') {
+    const next = rev.status === act ? 'pending' : act;
+    await save(id, { status: next });
+    await afterSave(node, id, next);
+    return;
+  }
+
+  if (act === 'reset') {
+    await save(id, { status: 'pending', text: '' });
+    await afterSave(node, id, 'pending', true);
+    return;
+  }
+
+  if (act === 'edit') {
+    const wrap = node.querySelector('.editwrap');
+    if (wrap.dataset.open === '1') { wrap.innerHTML = ''; wrap.dataset.open = '0'; return; }
+    wrap.dataset.open = '1';
+    const cur = rev.text != null ? rev.text : (e.out || '');
+    wrap.innerHTML = `<textarea class="editbox">${esc(cur)}</textarea>
+      <div class="acts">
+        <button class="save" data-e="save">✓ 保存</button>
+        <button class="cancel" data-e="cancel">取消</button>
+        <button class="cancel" data-e="restore">恢复 AI 版本</button>
+      </div>
+      <div class="hint">保存后会替代 AI 版本展示，并记录为「已手改」</div>`;
+    const ta = wrap.querySelector('.editbox');
+    ta.focus();
+    ta.setSelectionRange(ta.value.length, ta.value.length);
+    wrap.querySelector('[data-e="save"]').onclick = async () => {
+      await save(id, { text: ta.value.trim() });
+      await afterSave(node, id, rev.status || null, true);
+    };
+    wrap.querySelector('[data-e="cancel"]').onclick = () => { wrap.innerHTML = ''; wrap.dataset.open = '0'; };
+    wrap.querySelector('[data-e="restore"]').onclick = async () => {
+      await save(id, { text: '' });
+      await afterSave(node, id, rev.status || null, true);
+    };
+  }
+}
+
+async function save(id, payload) {
+  try {
+    const r = await api('/api/review', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(Object.assign({ id }, payload)),
+    });
+    if (r.review) DAY.reviews[id] = r.review; else delete DAY.reviews[id];
+  } catch (err) {
+    alert('保存失败：' + err.message);
+  }
+}
+
+async function afterSave(node, id, status, keepScroll) {
+  await loadStats();
+  const y = window.scrollY;
+  buildChips();
+  render();
+  if (keepScroll) window.scrollTo(0, y);
+}
+
+/* ---------- 顶部控件 ---------- */
+$('#date').onchange = e => goDate(e.target.value);
+$('#prevDay').onclick = () => stepDay(-1);
+$('#nextDay').onclick = () => stepDay(1);
+$('#todayBtn').onclick = () => goDate(TODAY);
+$('#type').onchange = e => { curType = e.target.value; buildChips(); render(); };
+$('#sort').onchange = e => { sortBy = e.target.value; render(); };
+$('#q').addEventListener('input', e => { kw = e.target.value.trim(); render(); });
+$('#showAuto').onchange = e => {
+  showAuto = e.target.checked;
+  syncAutoBar(); buildChips(); render();
+};
+function syncAutoBar() {
+  $('#showAutoWrap').classList.toggle('hot', showAuto);
+}
+syncAutoBar();
+$('#date').title = `共 ${DAY_KEYS.length} 天 · 用 ◀ ▶ 或键盘 ← → 切换`;
+document.querySelectorAll('#view button').forEach(b => {
+  b.onclick = () => {
+    document.querySelectorAll('#view button').forEach(x => x.classList.remove('on'));
+    b.classList.add('on'); curView = b.dataset.v; render();
+  };
+});
+
+/* 键盘：a=通过  r=不展示  e=编辑  j/k=上下条  ←/→=前后一天  t=今天 */
+document.addEventListener('keydown', ev => {
+  if (['INPUT', 'TEXTAREA', 'SELECT'].includes(ev.target.tagName)) return;
+  if (ev.key === 'ArrowLeft' && !ev.ctrlKey && !ev.metaKey) { ev.preventDefault(); stepDay(-1); return; }
+  if (ev.key === 'ArrowRight' && !ev.ctrlKey && !ev.metaKey) { ev.preventDefault(); stepDay(1); return; }
+  if (ev.key === 't') { ev.preventDefault(); goDate(TODAY); return; }
+  const items = [...document.querySelectorAll('#list .item')];
+  if (!items.length) return;
+  const i = items.findIndex(n => n.getBoundingClientRect().top > 80);
+  const cur = items[Math.max(0, i)];
+  if (ev.key === 'j' || ev.key === 'k') {
+    ev.preventDefault();
+    const t = ev.key === 'j' ? items[Math.min(items.length - 1, Math.max(0, i))] : items[Math.max(0, i - 2)];
+    if (t) t.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    return;
+  }
+  if (!cur) return;
+  if (ev.key === 'a') { ev.preventDefault(); onAction(cur, cur.dataset.id, 'approved'); }
+  if (ev.key === 'r') { ev.preventDefault(); onAction(cur, cur.dataset.id, 'rejected'); }
+  if (ev.key === 'e') { ev.preventDefault(); onAction(cur, cur.dataset.id, 'edit'); }
+});
+</script>
+</body>
+</html>
